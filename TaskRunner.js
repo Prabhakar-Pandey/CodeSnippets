@@ -45,6 +45,11 @@ const taskD = {
   time: 1000,
   deps: [taskA, taskB]
 };
+const taskF = {
+  name: "D",
+  time: 1000,
+  deps: [taskA]
+};
 const taskE = {
   name: "E",
   time: 1000,
@@ -55,64 +60,40 @@ let jobs = [];
 
 
 function executeTask(task){
-  let startTime = formatDate(new Date());
+  return new Promise((resolve)=>{
+    let startTime = formatDate(new Date());
       setTimeout(() => {
-        //console.log("timeout",task.name)
-        let data = Date;
-
-        if (jobs.indexOf(task.name) === -1) {
-          let endTime = formatDate(new Date());
-          jobs.push(task.name);
-          resolve();
+        let endTime = formatDate(new Date());
+          resolve({
+            name:task.name,
+            startTime,
+            endTime
+          });
           console.log(
             task.name,
             startTime,
             endTime
           );
-        }
       }, task.time);
+  })
+  
+}
+async function buildExecutionContext(tasks, depth=100){
+  if(tasks.deps &&tasks.deps.length>0){
+    for(let i=0;i<tasks.deps.length;i++){
+      await buildExecutionContext(tasks.deps[i], depth-1)
+    }
+  } 
+  return executeTask(tasks)
+}
+
+function runTask(tasks) {
+  buildExecutionContext(tasks)
 }
 
 
-function runTask(task) {
-  // ...
 
-  return new Promise(async (resolve, reject) => {
-    if (task.deps.length) {
-      // task.deps.forEach(async task=>{
+runTask(taskE);
 
-      // })
-      for (let i = 0; i < task.deps.length; i++) {
-        await runTask(task.deps[i]);
-      }
-      
-    }else if(jobs.indexOf(task.name)===-1){
-      await runTask(task);
-    }
-    if (task.time) {
-      let startTime = formatDate(new Date());
-      setTimeout(() => {
-        //console.log("timeout",task.name)
-        let data = Date;
+//console.log(arr,jobsObj)
 
-        if (jobs.indexOf(task.name) === -1) {
-          let endTime = formatDate(new Date());
-          jobs.push(task.name);
-          resolve();
-          console.log(
-            task.name,
-            startTime,
-            endTime
-          );
-        }
-      }, task.time);
-    }
-  });
-
-  // if(jobs.indexOf(task.name)===-1){
-  //   jobs.push(task.name)
-  // }
-}
-
-const allJobsOrder = runTask(taskE);
-console.log(jobs);
